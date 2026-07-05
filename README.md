@@ -1,146 +1,119 @@
-# DJS05: Show Detail Page with Routing and Navigation
+# DJS05 Show Detail Page with Routing and Navigation
 
-**Student:** Nthabiseng Moloi  
-**Submission:** NTHMOL2550_PT2508_A_Nthabiseng_Moloi_DJS05
+This is a solution to the **DJS05 Show Detail Page with Routing and Navigation** coursework project — a podcast browsing app with search, sort, filter, pagination, dynamic show detail pages, and season navigation. The app fetches data from the [Podcast API](https://podcast-api.netlify.app) and lets users explore shows, open individual podcasts at unique URLs, and return to the homepage without losing their browse state.
 
----
+## Table of contents
+
+- [Overview](#overview)
+  - [The challenge](#the-challenge)
+  - [Screenshot](#screenshot)
+- [My process](#my-process)
+  - [Built with](#built-with)
+  - [What I learned](#what-i-learned)
+  - [Continued development](#continued-development)
+  - [Useful resources](#useful-resources)
+- [Author](#author)
+- [Acknowledgments](#acknowledgments)
 
 ## Overview
 
-This project is a React podcast browsing app with a searchable homepage and dynamic show detail pages. Users can filter and paginate podcasts on the listing page, open any show at a unique URL, browse seasons and episodes, and return to the homepage with their previous search and filter state preserved.
+### The challenge
+
+Users should be able to:
+
+- View a list of podcasts fetched from the remote API
+- Search podcasts by title with results updating as they type
+- Sort podcasts by newest first, title A–Z, or title Z–A
+- Filter podcasts by one or more genres using a multi-select control
+- Paginate through results without losing active search, sort, or filter state
+- Click a podcast to open a dedicated detail page at a unique URL (`/show/:id`)
+- See full show details including title, image, description, genre tags, and a formatted last-updated date
+- Browse seasons and episodes with expand/collapse navigation
+- Return to the homepage with previous search, filter, sort, and page state preserved
+- See loading, error, and empty states when data is fetching or unavailable
+- See a responsive layout that works across different screen sizes
+- See hover and focus states on all interactive elements
+
+### Screenshot
 
 ![Show page reference](<Show Page Podcast.png>)
 
----
+## My process
 
-## Running Locally
+### Built with
 
-**Prerequisites:** Node.js 18+ and npm
+- Semantic HTML5 markup
+- CSS custom properties
+- CSS Grid & Flexbox
+- Mobile-first responsive workflow
+- [React](https://reactjs.org/) — UI library
+- [Vite](https://vitejs.dev/) — build tool and dev server
+- [React Router](https://reactrouter.com/) — client-side routing and URL state
+- React Context — centralised browse state management
+- Custom hooks — `useShow` for detail-page data fetching
+- Plain CSS — no UI framework
 
-```bash
-npm install
-npm run dev
+### What I learned
+
+This project built on the browsing patterns from DJS04 and added **routing**, **async detail fetching**, and **cross-page state preservation**.
+
+Dynamic routes made each show bookmarkable and shareable. React Router's `useParams` hook reads the show ID from the URL, and a custom `useShow` hook handles loading, success, and error states:
+
+```jsx
+export function useShow(showId) {
+  const [show, setShow] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // fetch show by ID, handle cancellation on unmount
+  }, [showId]);
+
+  return { show, loading, error };
+}
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:5173`).
+To preserve browse state when navigating back from a detail page, search, genre filters, sort order, and the current page are synced to URL query parameters on the homepage:
 
-Production build:
-
-```bash
-npm run build
-npm run preview
+```js
+export function buildBrowseSearchParams({ searchQuery, selectedGenres, sortBy, currentPage }) {
+  const params = new URLSearchParams();
+  if (searchQuery.trim()) params.set("q", searchQuery.trim());
+  if (selectedGenres.length > 0) params.set("genres", selectedGenres.join(","));
+  if (sortBy !== "newest") params.set("sort", sortBy);
+  if (currentPage > 1) params.set("page", String(currentPage));
+  return params;
+}
 ```
 
----
+For shows with many seasons, an accordion-style `SeasonNavigation` component keeps the page manageable — only one season expands at a time, showing episode number, title, season image, and a shortened description.
 
-## Main Features
+I also learned that URL syncing should only run on the homepage. Writing query parameters while on a detail route would wipe the saved browse state from the address bar.
 
-### Homepage / Listing Page
-- Podcast grid with clickable cards that navigate to each show's detail page
-- Live search by podcast title
-- Multi-select genre filters
-- Sorting (newest, title A–Z, title Z–A)
-- Pagination with page summaries
-- Loading, error, and empty states
+### Continued development
 
-### Dynamic Show Detail Page
-- Unique route per show: `/show/:id`
-- Fetches show data from `https://podcast-api.netlify.app/id/<ID>`
-- Displays title, large cover image, description, genre tags, and formatted last-updated date
-- Loading indicator, user-friendly errors, and graceful handling when a show is not found
+- Write unit tests for `podcastUtils.js`, `truncateText.js`, and the `useShow` hook
+- Add loading skeletons instead of plain text while podcasts and show details fetch
+- Add an audio player for episode playback
+- Allow multiple seasons to remain expanded at the same time
+- Consider debouncing the search input for larger datasets
+- Map detail-page genre strings to the same local genre ID lookup used on the homepage
 
-### Season Navigation
-- Expand/collapse seasons to reduce scrolling on shows with many seasons
-- Season title and episode count in each panel
-- Episode cards with episode number, title, season image, and shortened description
+### Useful resources
 
-### State Preservation
-- Search, genre filters, sort order, and current page are stored in URL query parameters
-- State is restored when navigating back from a detail page (browser back or "Back to podcasts" link)
+- [Podcast API](https://podcast-api.netlify.app) — source of all podcast preview and show detail data used in this project
+- [React Router documentation](https://reactrouter.com/en/main) — dynamic routes, `useParams`, and `useSearchParams`
+- [React Context documentation](https://react.dev/reference/react/useContext) — helped with structuring centralised app state
+- [Vite documentation](https://vitejs.dev/guide/) — setup, dev server, and production build
+- [The Markdown Guide](https://www.markdownguide.org/) — formatting this README
 
-### Code Quality
-- Modular React components with JSDoc comments on major functions and modules
-- Responsive layout for mobile, tablet, and desktop
+## Author
 
----
+- GitHub - [@Nthabi2905](https://github.com/Nthabi2905)
 
-## Technologies
+## Acknowledgments
 
-- React 19
-- React Router DOM
-- Vite
-- Fetch API
-- CSS3
-
----
-
-## Project Structure
-
-```
-src/
-├── components/       Reusable UI (cards, filters, season navigation)
-├── context/          Shared browse state synced with URL parameters
-├── data/             Genre ID to title mapping
-├── hooks/            useShow data-fetching hook
-├── pages/            HomePage and ShowDetailPage routes
-├── services/         API helpers (fetchPodcasts, fetchShow)
-└── utils/            Filtering, date formatting, text truncation
-```
-
----
-
-## API Endpoints
-
-| URL | Returns |
-| --- | --- |
-| `https://podcast-api.netlify.app` | Array of podcast previews |
-| `https://podcast-api.netlify.app/genre/<ID>` | Genre object |
-| `https://podcast-api.netlify.app/id/<ID>` | Full show with seasons and episodes |
-
-### Genre Titles
-
-| ID | Title |
-| --- | --- |
-| 1 | Personal Growth |
-| 2 | Investigative Journalism |
-| 3 | History |
-| 4 | Comedy |
-| 5 | Entertainment |
-| 6 | Business |
-| 7 | Fiction |
-| 8 | News |
-| 9 | Kids and Family |
-
----
-
-## Known Limitations
-
-- Genre tags on the detail page use string labels from the show API, while the homepage uses numeric genre IDs mapped locally in `src/data/genres.js`
-- Episode audio URLs are API placeholders and are not played in the UI
-- Only one season panel is expanded at a time on the detail page
-
----
-
-## Suggested Commit Messages
-
-Use clear, descriptive messages that explain what changed and why:
-
-| Commit | Message |
-| --- | --- |
-| Initial setup | `DJS05: Show Detail Page with Routing and Navigation` |
-| Homepage & filters | `feat: add podcast listing with search, filters, and pagination` |
-| Routing & detail page | `feat: add dynamic show detail route and API fetching` |
-| Season navigation | `feat: add expandable season navigation with episode list` |
-| State preservation | `feat: persist browse state in URL query parameters` |
-| Documentation | `docs: update README with setup instructions and features` |
-
-**Format tip:** Start with a short summary (50 characters or less), then add a blank line and more detail if needed.
-
-Example:
-
-```
-feat: add dynamic show detail route and API fetching
-
-Fetch show data by ID from the podcast API and display title,
-image, genres, and description with loading and error states.
-```
+- Course materials and brief for the DJS05 Show Detail Page with Routing and Navigation project
+- [Podcast API](https://podcast-api.netlify.app) for providing preview and show detail data
+- Genre metadata supplied in the project `data.js` file
+- DJS04 project patterns for search, sort, filter, and pagination
