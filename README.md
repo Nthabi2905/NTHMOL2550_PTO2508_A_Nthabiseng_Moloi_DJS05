@@ -36,7 +36,7 @@ Users should be able to:
 
 ### Screenshot
 
-![Show page reference](<Show Page Podcast.png>)
+![Podcast show detail page](./screenshot.png)
 
 ## My process
 
